@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "tsx src/main.ts"
   },
   "devDependencies": {
     "sass-embedded": "^1.90.0",
+    "tsx": "^4.20.5",
     "typescript": "~5.8.3",
     "vite": "^7.1.0"
   }
