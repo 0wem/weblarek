@@ -188,7 +188,7 @@ constructor(data?: IBuyer)
  setData(data: IBuyer): void — обновляет данные покупателя.
  getData(): IBuyer — возвращает текущие данные покупателя.
  clear(): void — очищает данные (например, после оформления заказа).
- validate(): boolean — проверяет корректность введённых данных (например, формат email и телефона).
+ validate(): { email: boolean; phone: boolean; address: boolean; payment: boolean } — проверяет корректность введённых данных (например, формат email и телефона).
 
 
 ### Слой коммуникации
