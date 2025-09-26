@@ -1,10 +1,13 @@
 import { IProduct } from '../../types';
+import { EventEmitter } from '../base/Events';
 
 export class Cart {
   private items: IProduct[];
+  private eventEmitter: EventEmitter;
 
-  constructor(items: IProduct[] = []) {
+  constructor(items: IProduct[] = [], eventEmitter: EventEmitter) {
     this.items = items;
+    this.eventEmitter = eventEmitter;
   }
 
   getItems(): IProduct[] {
@@ -13,14 +16,18 @@ export class Cart {
 
   addItem(item: IProduct): void {
     this.items.push(item);
+    this.eventEmitter.emit('cart:item-added', { item, items: this.items });
   }
 
   removeItem(id: string): void {
+    const removedItem = this.items.find(item => item.id === id);
     this.items = this.items.filter(item => item.id !== id);
+    this.eventEmitter.emit('cart:item-removed', { item: removedItem, items: this.items });
   }
 
   clear(): void {
     this.items = [];
+    this.eventEmitter.emit('cart:cleared', { items: this.items });
   }
 
   getTotalPrice(): number {

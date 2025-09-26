@@ -28,3 +28,25 @@ export interface IOrder {
 }
 
 export type TPayment = 'card' | 'cash' | null;
+
+export interface ICardData {
+  id: string;
+  title: string;
+  description?: string;
+  image: string;
+  category: string;
+  price: number | null;
+}
+
+export interface IFormData {
+  [key: string]: string | boolean;
+}
+
+export interface IBasketData {
+  items: ICardData[];
+  totalPrice: number;
+}
+
+export interface IOrderSuccessData {
+  totalPrice: number;
+}
