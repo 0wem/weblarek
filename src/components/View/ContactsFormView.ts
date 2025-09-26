@@ -14,12 +14,14 @@ export class ContactsFormView extends FormView {
     // Устанавливаем слушатели событий один раз в конструкторе
     // Валидация email
     this.emailInput?.addEventListener('input', () => {
+      this.eventEmitter.emit('order:change', { value: this.emailInput.value, key: 'email' });
       this.validateForm();
     });
 
     // Валидация телефона
     this.phoneInput?.addEventListener('input', () => {
       this.formatPhoneNumber(this.phoneInput);
+      this.eventEmitter.emit('order:change', { value: this.phoneInput.value, key: 'phone' });
       this.validateForm();
     });
   }
@@ -27,6 +29,20 @@ export class ContactsFormView extends FormView {
   protected handleSubmit(): void {
     const formData = this.getFormData();
     this.eventEmitter.emit('contacts:submit', formData);
+  }
+
+  validate(errors: { payment: boolean; email: boolean; phone: boolean; address: boolean }): void {
+    const isValid = errors.email && errors.phone;
+    this.setSubmitButtonEnabled(isValid);
+    
+    if (!isValid) {
+      const errorMessages: string[] = [];
+      if (!errors.email) errorMessages.push('Некорректный email');
+      if (!errors.phone) errorMessages.push('Некорректный телефон');
+      this.showErrors(errorMessages);
+    } else {
+      this.clearErrors();
+    }
   }
 
   private validateForm(): void {

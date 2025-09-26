@@ -17,17 +17,20 @@ export class Cart {
   addItem(item: IProduct): void {
     this.items.push(item);
     this.eventEmitter.emit('cart:item-added', { item, items: this.items });
+    this.eventEmitter.emit('basket:change', { items: this.items });
   }
 
   removeItem(id: string): void {
     const removedItem = this.items.find(item => item.id === id);
     this.items = this.items.filter(item => item.id !== id);
     this.eventEmitter.emit('cart:item-removed', { item: removedItem, items: this.items });
+    this.eventEmitter.emit('basket:change', { items: this.items });
   }
 
   clear(): void {
     this.items = [];
     this.eventEmitter.emit('cart:cleared', { items: this.items });
+    this.eventEmitter.emit('basket:change', { items: this.items });
   }
 
   getTotalPrice(): number {

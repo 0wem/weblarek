@@ -15,11 +15,13 @@ export class OrderFormView extends FormView {
     this.paymentButtons.forEach(button => {
       button.addEventListener('click', () => {
         this.selectPaymentMethod(button);
+        this.eventEmitter.emit('order:change', { value: button.name, key: 'payment' });
       });
     });
 
     // Валидация адреса
     this.addressInput?.addEventListener('input', () => {
+      this.eventEmitter.emit('order:change', { value: this.addressInput.value, key: 'address' });
       this.validateForm();
     });
   }
@@ -41,6 +43,21 @@ export class OrderFormView extends FormView {
     selectedButton.classList.add('button_alt-active');
     
     this.validateForm();
+  }
+
+  validate(errors: { payment: boolean; email: boolean; phone: boolean; address: boolean }): void {
+    const isValid = errors.payment && errors.address;
+    this.setSubmitButtonEnabled(isValid);
+    
+    if (!isValid) {
+      if (!errors.payment) {
+        this.showErrors(['Необходимо выбрать способ оплаты']);
+      } else if (!errors.address) {
+        this.showErrors(['Необходимо указать адрес']);
+      }
+    } else {
+      this.clearErrors();
+    }
   }
 
   private validateForm(): void {

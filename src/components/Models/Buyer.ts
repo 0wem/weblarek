@@ -23,11 +23,33 @@ export class Buyer {
     this.email = data.email ?? this.email;
     this.phone = data.phone ?? this.phone;
     this.address = data.address ?? this.address;
-    
-    this.eventEmitter.emit('buyer:data-changed', { 
-      oldData, 
-      newData: this.getData() 
+
+    this.eventEmitter.emit('buyer:data-changed', {
+      oldData,
+      newData: this.getData()
     });
+  }
+
+  change(key: keyof IBuyer, value: string): void {
+    const oldData = this.getData();
+    (this as any)[key] = value;
+    this.validate();
+    this.eventEmitter.emit('buyer:data-changed', {
+      oldData,
+      newData: this.getData()
+    });
+  }
+
+  validate(): { payment: boolean; email: boolean; phone: boolean; address: boolean } {
+    const errors = {
+      payment: this.payment !== undefined,
+      email: this.email.includes("@"),
+      phone: this.phone.length >= 10,
+      address: this.address.length > 5,
+    };
+    
+    this.eventEmitter.emit('form:validate', errors);
+    return errors;
   }
 
   getData(): IBuyer {
@@ -52,14 +74,6 @@ export class Buyer {
     });
   }
 
-  validate(): { payment: boolean; email: boolean; phone: boolean; address: boolean } {
-    return {
-      payment: this.payment !== undefined,
-      email: this.email.includes("@"),
-      phone: this.phone.length >= 10,
-      address: this.address.length > 5,
-    };
-  }
 
   isValid(): boolean {
     const v = this.validate();
