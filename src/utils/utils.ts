@@ -31,7 +31,7 @@ export function ensureElement<T extends HTMLElement>(selectorElement: SelectorEl
     if (isSelector(selectorElement)) {
         const elements = ensureAllElements<T>(selectorElement, context);
         if (elements.length > 1) {
-            console.warn(`selector ${selectorElement} return more then one element`);
+            // Предупреждение: селектор вернул более одного элемента
         }
         if (elements.length === 0) {
             throw new Error(`selector ${selectorElement} return nothing`);

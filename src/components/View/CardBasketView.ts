@@ -1,5 +1,6 @@
 import { CardView } from './CardView';
 import { ICardData } from '../../types';
+import { EventEmitter } from '../base/Events';
 
 export class CardBasketView extends CardView {
   private index: number;
@@ -8,17 +9,9 @@ export class CardBasketView extends CardView {
   private priceEl: HTMLElement;
   private deleteButton: HTMLButtonElement;
 
-  constructor(container: HTMLElement, eventEmitter: any, index: number = 0) {
+  constructor(container: HTMLElement, eventEmitter: EventEmitter, index: number = 0) {
     super(container, eventEmitter);
     this.index = index;
-    
-    // Создаем разметку карточки корзины
-    this.container.innerHTML = `
-      <span class="basket__item-index">${this.index}</span>
-      <span class="card__title"></span>
-      <span class="card__price"></span>
-      <button class="basket__item-delete card__button" aria-label="удалить"></button>
-    `;
     
     // Находим элементы в конструкторе и сохраняем в полях класса
     this.indexEl = this.container.querySelector('.basket__item-index') as HTMLElement;

@@ -1,10 +1,11 @@
 import { FormView } from './FormView';
+import { EventEmitter } from '../base/Events';
 
 export class ContactsFormView extends FormView {
   private emailInput: HTMLInputElement;
   private phoneInput: HTMLInputElement;
 
-  constructor(container: HTMLElement, eventEmitter: any) {
+  constructor(container: HTMLElement, eventEmitter: EventEmitter) {
     super(container, eventEmitter);
     
     // Находим элементы в конструкторе и сохраняем в полях класса

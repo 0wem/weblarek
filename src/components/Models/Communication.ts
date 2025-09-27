@@ -18,7 +18,7 @@ export class Communication {
       const response = await this.api.get<IApiProductsResponse>(`/product/`);
       return response.items || [];
     } catch (error) {
-      console.error('Ошибка при получении товаров:', error);
+      // Ошибка при получении товаров - возвращаем пустой массив
       return [];
     }
   }
@@ -27,7 +27,7 @@ export class Communication {
     try {
       return await this.api.post(`${API_URL}/order/`, order);
     } catch (error) {
-      console.error('Ошибка при отправке заказа:', error);
+      // Ошибка при отправке заказа - возвращаем пустой объект
       return {};
     }
   }

@@ -1,4 +1,5 @@
 import { CardView } from './CardView';
+import { EventEmitter } from '../base/Events';
 
 export class CardCatalogView extends CardView {
   private categoryEl: HTMLElement;
@@ -6,16 +7,8 @@ export class CardCatalogView extends CardView {
   private imageEl: HTMLImageElement;
   private priceEl: HTMLElement;
 
-  constructor(container: HTMLElement, eventEmitter: any) {
+  constructor(container: HTMLElement, eventEmitter: EventEmitter) {
     super(container, eventEmitter);
-    
-    // Создаем разметку карточки каталога точно как в макете
-    this.container.innerHTML = `
-      <span class="card__category"></span>
-      <h2 class="card__title"></h2>
-      <img class="card__image" src="" alt="" />
-      <span class="card__price"></span>
-    `;
     
     // Находим элементы в конструкторе и сохраняем в полях класса
     this.categoryEl = this.container.querySelector('.card__category') as HTMLElement;

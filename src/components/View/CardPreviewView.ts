@@ -1,4 +1,5 @@
 import { CardView } from './CardView';
+import { EventEmitter } from '../base/Events';
 
 export class CardPreviewView extends CardView {
   private imageEl: HTMLImageElement;
@@ -9,22 +10,8 @@ export class CardPreviewView extends CardView {
   private addToCartButton: HTMLButtonElement;
   private isInCart: boolean = false;
 
-  constructor(container: HTMLElement, eventEmitter: any) {
+  constructor(container: HTMLElement, eventEmitter: EventEmitter) {
     super(container, eventEmitter);
-    
-    // Создаем разметку карточки превью
-    this.container.innerHTML = `
-      <img class="card__image" src="" alt="" />
-      <div class="card__column">
-        <span class="card__category"></span>
-        <h2 class="card__title"></h2>
-        <p class="card__text"></p>
-        <div class="card__row">
-          <button class="button card__button">Купить</button>
-          <span class="card__price"></span>
-        </div>
-      </div>
-    `;
     
     // Находим элементы в конструкторе и сохраняем в полях класса
     this.imageEl = this.container.querySelector('.card__image') as HTMLImageElement;

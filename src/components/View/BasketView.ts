@@ -1,7 +1,6 @@
 import { Component } from '../base/Component';
 import { EventEmitter } from '../base/Events';
 import { IBasketData } from '../../types';
-import { CardBasketView } from './CardBasketView';
 
 export class BasketView extends Component<IBasketData> {
   private eventEmitter: EventEmitter;
@@ -9,7 +8,6 @@ export class BasketView extends Component<IBasketData> {
   private basketButton: HTMLButtonElement;
   private basketPrice: HTMLElement;
   private emptyMessage: HTMLElement;
-  private items: IBasketData['items'] = [];
 
   constructor(container: HTMLElement, eventEmitter: EventEmitter) {
     super(container);
@@ -23,19 +21,11 @@ export class BasketView extends Component<IBasketData> {
     
     // Устанавливаем слушатели событий один раз в конструкторе
     this.basketButton?.addEventListener('click', () => {
-      // Проверяем, что корзина не пуста перед оформлением заказа
-      if (this.items.length > 0) {
-        this.eventEmitter.emit('basket:order');
-      }
+      this.eventEmitter.emit('basket:order');
     });
   }
 
   render(data?: Partial<IBasketData>): HTMLElement {
-    if (data?.items) {
-      this.items = data.items;
-      this.updateItems();
-    }
-    
     if (data?.totalPrice !== undefined) {
       this.updateTotalPrice(data.totalPrice);
     }
@@ -43,28 +33,17 @@ export class BasketView extends Component<IBasketData> {
     return this.container;
   }
 
-  private updateItems(): void {
+  set items(items: HTMLElement[]) {
     if (!this.basketList) return;
     
-    this.basketList.innerHTML = '';
+    this.basketList.replaceChildren(...items);
     
-    if (this.items.length === 0) {
-      // Показываем сообщение о пустой корзине
+    if (items.length === 0) {
       this.showEmptyMessage();
       this.setButtonState(false);
     } else {
-      // Скрываем сообщение о пустой корзине
       this.hideEmptyMessage();
       this.setButtonState(true);
-      
-      // Показываем товары
-      this.items.forEach((item, index) => {
-        const listItem = document.createElement('li');
-        listItem.className = 'basket__item card card_compact';
-        const card = new CardBasketView(listItem, this.eventEmitter, index + 1);
-        card.render(item);
-        this.basketList.appendChild(listItem);
-      });
     }
   }
 
@@ -77,18 +56,6 @@ export class BasketView extends Component<IBasketData> {
   private showEmptyMessage(): void {
     if (this.emptyMessage) {
       this.emptyMessage.style.display = 'block';
-    } else {
-      // Создаем сообщение о пустой корзине, если его нет
-      const emptyDiv = document.createElement('div');
-      emptyDiv.className = 'basket__empty';
-      emptyDiv.textContent = 'Корзина пуста';
-      emptyDiv.style.textAlign = 'center';
-      emptyDiv.style.color = '#999';
-      emptyDiv.style.padding = '2rem';
-      
-      // Вставляем после списка товаров
-      this.basketList.parentNode?.insertBefore(emptyDiv, this.basketList.nextSibling);
-      this.emptyMessage = emptyDiv;
     }
   }
 

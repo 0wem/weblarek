@@ -16,7 +16,9 @@ import {
   OrderFormView,
   ContactsFormView,
   OrderSuccessView,
-  CardPreviewView
+  CardPreviewView,
+  CardCatalogView,
+  CardBasketView
 } from './components/View';
 import { IProduct, ICardData, IFormData, IBuyer } from './types';
 
@@ -38,6 +40,8 @@ const orderTemplate = document.querySelector('#order') as HTMLTemplateElement;
 const contactsTemplate = document.querySelector('#contacts') as HTMLTemplateElement;
 const successTemplate = document.querySelector('#success') as HTMLTemplateElement;
 const cardPreviewTemplate = document.querySelector('#card-preview') as HTMLTemplateElement;
+const cardCatalogTemplate = document.querySelector('#card-catalog') as HTMLTemplateElement;
+const cardBasketTemplate = document.querySelector('#card-basket') as HTMLTemplateElement;
 
 if (!pageElement || !headerElement || !galleryElement || !modalElement) {
   throw new Error('Не все элементы DOM найдены');
@@ -45,7 +49,7 @@ if (!pageElement || !headerElement || !galleryElement || !modalElement) {
 
 const pageView = new PageView(pageElement, eventEmitter);
 const headerView = new HeaderView(headerElement, eventEmitter);
-const galleryView = new GalleryView(galleryElement, eventEmitter);
+const galleryView = new GalleryView(galleryElement);
 const modalView = new ModalView(modalElement, eventEmitter);
 
 const basketView = new BasketView(basketTemplate.content.cloneNode(true) as HTMLElement, eventEmitter);
@@ -93,21 +97,26 @@ async function loadProducts() {
       throw new Error('Сервер вернул пустой массив товаров');
     }
   } catch (error) {
-    console.error('Ошибка загрузки товаров:', error);
+    // Ошибка загрузки товаров - приложение продолжит работу с пустым каталогом
   }
 }
 
 function handleProductsChanged(data: { products: IProduct[] }) {
-  const cardData: ICardData[] = data.products.map(product => ({
-    id: product.id,
-    title: product.title,
-    description: product.description,
-    image: product.image,
-    category: product.category,
-    price: product.price
-  }));
+  const cardElements = data.products.map(product => {
+    const cardElement = cardCatalogTemplate.content.cloneNode(true) as HTMLElement;
+    const card = new CardCatalogView(cardElement, eventEmitter);
+    card.render({
+      id: product.id,
+      title: product.title,
+      description: product.description,
+      image: product.image,
+      category: product.category,
+      price: product.price
+    });
+    return cardElement;
+  });
 
-  galleryView.render({ items: cardData });
+  galleryView.items = cardElements;
 }
 
 function handleProductSelected(product: IProduct | null) {
@@ -156,19 +165,22 @@ function handleBasketChange(data: { items: IProduct[] }) {
   headerView.render({ count: data.items.length });
 
   if (modalView.isOpen() && modalView.getContent()?.classList.contains('basket')) {
-    const basketItems: ICardData[] = data.items.map(item => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      image: item.image,
-      category: item.category,
-      price: item.price
-    }));
-
-    basketView.render({
-      items: basketItems,
-      totalPrice: cart.getTotalPrice()
+    const basketItems = data.items.map((item, index) => {
+      const basketElement = cardBasketTemplate.content.cloneNode(true) as HTMLElement;
+      const card = new CardBasketView(basketElement, eventEmitter, index + 1);
+      card.render({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        image: item.image,
+        category: item.category,
+        price: item.price
+      });
+      return basketElement;
     });
+
+    basketView.items = basketItems;
+    basketView.render({ totalPrice: cart.getTotalPrice() });
   }
 }
 
@@ -191,19 +203,23 @@ function handleCardRemove(data: { product: ICardData }) {
 }
 
 function handleBasketOpen() {
-  const basketItems: ICardData[] = cart.getItems().map(item => ({
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    image: item.image,
-    category: item.category,
-    price: item.price
-  }));
+  const basketItems = cart.getItems().map((item, index) => {
+    const basketElement = cardBasketTemplate.content.cloneNode(true) as HTMLElement;
+    const card = new CardBasketView(basketElement, eventEmitter, index + 1);
+    card.render({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      image: item.image,
+      category: item.category,
+      price: item.price
+    });
+    return basketElement;
+  });
 
-  modalView.setContent(basketView.render({
-    items: basketItems,
-    totalPrice: cart.getTotalPrice()
-  }));
+  basketView.items = basketItems;
+  basketView.render({ totalPrice: cart.getTotalPrice() });
+  modalView.setContent(basketView.render({ totalPrice: cart.getTotalPrice() }));
   modalView.open();
 }
 
@@ -229,7 +245,12 @@ async function handleContactsSubmit(data: IFormData) {
   try {
     const order = {
       buyer: buyer.getData(),
-      items: cart.getItems()
+      items: cart.getItems(),
+      total: cart.getTotalPrice(),
+      payment: buyer.getData().payment,
+      email: buyer.getData().email,
+      phone: buyer.getData().phone,
+      address: buyer.getData().address
     };
 
     await communication.sendOrder(order);
@@ -237,7 +258,7 @@ async function handleContactsSubmit(data: IFormData) {
     modalView.setContent(orderSuccessView.render({ totalPrice: cart.getTotalPrice() }));
     cart.clear();
   } catch (error) {
-    console.error('Ошибка отправки заказа:', error);
+    // Ошибка отправки заказа - пользователь увидит сообщение об ошибке
   }
 }
 

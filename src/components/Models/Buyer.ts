@@ -32,7 +32,20 @@ export class Buyer {
 
   change(key: keyof IBuyer, value: string): void {
     const oldData = this.getData();
-    (this as any)[key] = value;
+    switch (key) {
+      case 'payment':
+        this.payment = value as IBuyer['payment'];
+        break;
+      case 'email':
+        this.email = value;
+        break;
+      case 'phone':
+        this.phone = value;
+        break;
+      case 'address':
+        this.address = value;
+        break;
+    }
     this.validate();
     this.eventEmitter.emit('buyer:data-changed', {
       oldData,
