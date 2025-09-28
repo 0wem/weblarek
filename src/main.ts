@@ -243,14 +243,15 @@ async function handleContactsSubmit(data: IFormData) {
   });
 
   try {
+    const buyerData = buyer.getData();
     const order = {
-      buyer: buyer.getData(),
+      buyer: buyerData,
       items: cart.getItems(),
       total: cart.getTotalPrice(),
-      payment: buyer.getData().payment,
-      email: buyer.getData().email,
-      phone: buyer.getData().phone,
-      address: buyer.getData().address
+      payment: buyerData.payment,
+      email: buyerData.email,
+      phone: buyerData.phone,
+      address: buyerData.address
     };
 
     await communication.sendOrder(order);
