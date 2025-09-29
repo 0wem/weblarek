@@ -13,7 +13,8 @@ export abstract class FormView extends Component<IFormData> {
     this.eventEmitter = eventEmitter;
     
     // Находим элементы в конструкторе и сохраняем в полях класса
-    this.form = this.container.querySelector('form') as HTMLFormElement;
+    // Если контейнер сам является формой, то это и есть форма
+    this.form = (container.tagName === 'FORM' ? container : this.container.querySelector('form')) as HTMLFormElement;
     this.submitButton = this.form?.querySelector('button[type="submit"]') as HTMLButtonElement;
     this.errorsElement = this.form?.querySelector('.form__errors') as HTMLElement;
     
@@ -77,5 +78,13 @@ export abstract class FormView extends Component<IFormData> {
     if (this.submitButton) {
       this.submitButton.disabled = !enabled;
     }
+  }
+
+  public resetForm(): void {
+    if (this.form) {
+      this.form.reset();
+    }
+    this.clearErrors();
+    this.setSubmitButtonEnabled(false);
   }
 }

@@ -21,11 +21,18 @@ export class BasketView extends Component<IBasketData> {
     
     // Устанавливаем слушатели событий один раз в конструкторе
     this.basketButton?.addEventListener('click', () => {
-      this.eventEmitter.emit('basket:order');
+      const currentItems = this.basketList.children.length;
+      if (currentItems > 0) {
+        this.eventEmitter.emit('basket:order');
+      }
     });
   }
 
   render(data?: Partial<IBasketData>): HTMLElement {
+    if (data?.items !== undefined) {
+      this.updateItems(data.items);
+    }
+    
     if (data?.totalPrice !== undefined) {
       this.updateTotalPrice(data.totalPrice);
     }
@@ -34,14 +41,20 @@ export class BasketView extends Component<IBasketData> {
   }
 
   set items(items: HTMLElement[]) {
+    this.basketList.replaceChildren(...items);
+  }
+
+  private updateItems(items: IBasketData['items']): void {
     if (!this.basketList) return;
     
-    this.basketList.replaceChildren(...items);
+    this.basketList.innerHTML = '';
     
     if (items.length === 0) {
+      // Показываем сообщение о пустой корзине
       this.showEmptyMessage();
       this.setButtonState(false);
     } else {
+      // Скрываем сообщение о пустой корзине
       this.hideEmptyMessage();
       this.setButtonState(true);
     }
@@ -56,6 +69,18 @@ export class BasketView extends Component<IBasketData> {
   private showEmptyMessage(): void {
     if (this.emptyMessage) {
       this.emptyMessage.style.display = 'block';
+    } else {
+      // Создаем сообщение о пустой корзине, если его нет
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'basket__empty';
+      emptyDiv.textContent = 'Корзина пуста';
+      emptyDiv.style.textAlign = 'center';
+      emptyDiv.style.color = '#999';
+      emptyDiv.style.padding = '2rem';
+      
+      // Вставляем после списка товаров
+      this.basketList.parentNode?.insertBefore(emptyDiv, this.basketList.nextSibling);
+      this.emptyMessage = emptyDiv;
     }
   }
 

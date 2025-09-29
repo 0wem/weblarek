@@ -37,6 +37,10 @@ export class Cart {
     return this.items.reduce((sum, item) => sum + (item.price ?? 0), 0);
   }
 
+  getTotal(): number {
+    return this.getTotalPrice();
+  }
+
   getCount(): number {
     return this.items.length;
   }

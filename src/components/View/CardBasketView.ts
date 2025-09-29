@@ -14,6 +14,7 @@ export class CardBasketView extends CardView {
     this.index = index;
     
     // Находим элементы в конструкторе и сохраняем в полях класса
+    // Контейнер уже содержит разметку из HTML шаблона
     this.indexEl = this.container.querySelector('.basket__item-index') as HTMLElement;
     this.titleEl = this.container.querySelector('.card__title') as HTMLElement;
     this.priceEl = this.container.querySelector('.card__price') as HTMLElement;

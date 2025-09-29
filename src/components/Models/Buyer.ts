@@ -1,5 +1,5 @@
 
-import { IBuyer } from "../../types";
+import { IBuyer, TPayment } from "../../types";
 import { EventEmitter } from "../base/Events";
 
 export class Buyer {
@@ -32,19 +32,14 @@ export class Buyer {
 
   change(key: keyof IBuyer, value: string): void {
     const oldData = this.getData();
-    switch (key) {
-      case 'payment':
-        this.payment = value as IBuyer['payment'];
-        break;
-      case 'email':
-        this.email = value;
-        break;
-      case 'phone':
-        this.phone = value;
-        break;
-      case 'address':
-        this.address = value;
-        break;
+    if(key === 'payment') {
+      this.payment = value as TPayment;
+    } else if (key === 'email') {
+      this.email = value;
+    } else if (key === 'phone') {
+      this.phone = value;
+    } else if (key === 'address') {
+      this.address = value;
     }
     this.validate();
     this.eventEmitter.emit('buyer:data-changed', {

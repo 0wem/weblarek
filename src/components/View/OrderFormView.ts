@@ -13,12 +13,14 @@ export class OrderFormView extends FormView {
     this.addressInput = this.form?.querySelector('[name="address"]') as HTMLInputElement;
     
     // Устанавливаем слушатели событий один раз в конструкторе
-    this.paymentButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        this.selectPaymentMethod(button);
-        this.eventEmitter.emit('order:change', { value: button.name, key: 'payment' });
+    if (this.paymentButtons) {
+      this.paymentButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          this.selectPaymentMethod(button);
+          this.eventEmitter.emit('order:change', { value: button.name, key: 'payment' });
+        });
       });
-    });
+    }
 
     // Валидация адреса
     this.addressInput?.addEventListener('input', () => {
@@ -34,10 +36,12 @@ export class OrderFormView extends FormView {
 
   private selectPaymentMethod(selectedButton: HTMLButtonElement): void {
     // Убираем активный класс со всех кнопок
-    this.paymentButtons.forEach(button => {
-      button.classList.remove('button_alt-active');
-      button.classList.add('button_alt');
-    });
+    if (this.paymentButtons) {
+      this.paymentButtons.forEach(button => {
+        button.classList.remove('button_alt-active');
+        button.classList.add('button_alt');
+      });
+    }
     
     // Добавляем активный класс к выбранной кнопке
     selectedButton.classList.remove('button_alt');
@@ -85,5 +89,17 @@ export class OrderFormView extends FormView {
   private getSelectedPayment(): string | null {
     const activeButton = this.form?.querySelector('.button_alt-active') as HTMLButtonElement;
     return activeButton?.name || null;
+  }
+
+  public resetForm(): void {
+    super.resetForm();
+    
+    // Сбрасываем кнопки оплаты к исходному состоянию
+    if (this.paymentButtons) {
+      this.paymentButtons.forEach(button => {
+        button.classList.remove('button_alt-active');
+        button.classList.add('button_alt');
+      });
+    }
   }
 }

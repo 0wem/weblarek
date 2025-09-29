@@ -14,6 +14,7 @@ export class CardPreviewView extends CardView {
     super(container, eventEmitter);
     
     // Находим элементы в конструкторе и сохраняем в полях класса
+    // Контейнер уже содержит разметку из HTML шаблона
     this.imageEl = this.container.querySelector('.card__image') as HTMLImageElement;
     this.categoryEl = this.container.querySelector('.card__category') as HTMLElement;
     this.titleEl = this.container.querySelector('.card__title') as HTMLElement;

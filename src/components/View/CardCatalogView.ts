@@ -11,6 +11,7 @@ export class CardCatalogView extends CardView {
     super(container, eventEmitter);
     
     // Находим элементы в конструкторе и сохраняем в полях класса
+    // Контейнер уже содержит разметку из HTML шаблона
     this.categoryEl = this.container.querySelector('.card__category') as HTMLElement;
     this.titleEl = this.container.querySelector('.card__title') as HTMLElement;
     this.imageEl = this.container.querySelector('.card__image') as HTMLImageElement;
@@ -22,6 +23,7 @@ export class CardCatalogView extends CardView {
         this.eventEmitter.emit('card:select', { product: this.data });
       }
     });
+    
   }
 
   protected updateContent(): void {

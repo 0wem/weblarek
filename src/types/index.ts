@@ -23,7 +23,11 @@ export interface IBuyer {
 }
 
 export interface IOrder {
-  buyer: IBuyer;     // данные покупателя
+  payment: TPayment; // выбранный способ оплаты
+  email: string;     // email покупателя
+  phone: string;      // телефон покупателя
+  address: string;   // адрес доставки
+  total: number;     // общая сумма заказа
   items: IProduct[]; // список выбранных товаров
 }
 
