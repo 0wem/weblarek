@@ -85,6 +85,7 @@ function setupEventHandlers() {
   eventEmitter.on('modal:close', handleModalClose);
 
   eventEmitter.on('order:change', (data: { value: string; key: string }) => handleOrderChange(data.key, data.value));
+  eventEmitter.on('contacts:change', (data: { value: string; key: string }) => handleContactsChange(data.key, data.value));
   eventEmitter.on('form:validate', handleFormValidate);
 }
 
@@ -179,37 +180,35 @@ function handleCartCleared() {
 function handleBasketChange(data: { items: IProduct[] }) {
   headerView.render({ count: data.items.length });
 
-  if (modalView.isOpen() && modalView.getContent()?.classList.contains('basket')) {
-    // Получаем общую стоимость один раз
-    const cartTotal = cart.getTotalPrice();
-    
-    // Создаем готовые элементы товаров в корзине
-    const basketTemplate = document.querySelector('#card-basket') as HTMLTemplateElement;
-    const basketItemsHtml: HTMLElement[] = data.items.map((item, index) => {
-      if (!basketTemplate) {
-        throw new Error('Шаблон карточки корзины не найден');
-      }
-      
-      const element = (basketTemplate.content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement;
-      const card = new CardBasketView(element, eventEmitter, index + 1);
-      const cardData: ICardData = {
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        image: item.image.startsWith('http') ? item.image : CDN_URL + item.image,
-        category: item.category,
-        price: item.price
-      };
-      
-      card.render(cardData);
-      return element;
-    });
+  // Получаем общую стоимость один раз
+  const cartTotal = cart.getTotalPrice();
+   
+  // Создаем готовые элементы товаров в корзине
+  const basketTemplate = document.querySelector('#card-basket') as HTMLTemplateElement;
+  const basketItemsHtml: HTMLElement[] = data.items.map((item, index) => {
+    if (!basketTemplate) {
+      throw new Error('Шаблон карточки корзины не найден');
+    }
+     
+    const element = (basketTemplate.content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement;
+    const card = new CardBasketView(element, eventEmitter, index + 1);
+    const cardData: ICardData = {
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      image: item.image.startsWith('http') ? item.image : CDN_URL + item.image,
+      category: item.category,
+      price: item.price
+    };
+     
+    card.render(cardData);
+    return element;
+  });
 
-    basketView.items = basketItemsHtml;
-    basketView.render({
-      totalPrice: cartTotal
-    });
-  }
+  basketView.items = basketItemsHtml;
+  basketView.render({
+    totalPrice: cartTotal
+  });
 }
 
 function handleCardSelect(data: { product: ICardData }) {
@@ -231,64 +230,34 @@ function handleCardRemove(data: { product: ICardData }) {
 }
 
 function handleBasketOpen() {
-  // Получаем данные корзины один раз
-  const cartItems = cart.getItems();
-  const cartTotal = cart.getTotalPrice();
-  
-  // Создаем готовые элементы товаров в корзине
-  const basketTemplate = document.querySelector('#card-basket') as HTMLTemplateElement;
-  const basketItemsHtml: HTMLElement[] = cartItems.map((item, index) => {
-    if (!basketTemplate) {
-      throw new Error('Шаблон карточки корзины не найден');
-    }
-    
-    const element = basketTemplate.content.cloneNode(true) as HTMLElement;
-    const card = new CardBasketView(element, eventEmitter, index + 1);
-    const cardData: ICardData = {
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      image: item.image.startsWith('http') ? item.image : CDN_URL + item.image,
-      category: item.category,
-      price: item.price
-    };
-    
-    card.render(cardData);
-    return element;
-  });
-
-  basketView.items = basketItemsHtml;
-  modalView.setContent(basketView.render({
-    totalPrice: cartTotal
-  }));
+  // При открытии корзины вызываем пустой рендер
+  modalView.setContent(basketView.render());
   modalView.open();
 }
 
 function handleBasketOrder() {
-  modalView.setContent(orderFormView.render());
+  const formElement = orderFormView.render();
+  modalView.setContent(formElement);
+  modalView.open();
+  // Вызываем валидацию при открытии формы
+  buyer.validate();
 }
 
-function handleOrderSubmit(data: IFormData) {
-  buyer.setData({
-    payment: data.payment as IBuyer['payment'],
-    address: data.address as string
-  });
-  
+function handleOrderSubmit(_data: IFormData) {
+  // Данные уже сохранены в модели при редактировании формы
   modalView.setContent(contactsFormView.render());
+  // Вызываем валидацию при открытии формы контактов
+  buyer.validate();
 }
 
-async function handleContactsSubmit(data: IFormData) {
-  buyer.setData({
-    email: data.email as string,
-    phone: data.phone as string
-  });
-
+async function handleContactsSubmit(_data: IFormData) {
+  // Данные уже сохранены в модели при редактировании формы
   try {
     // Получаем данные один раз для переиспользования
     const buyerData = buyer.getData();
     const cartTotal = cart.getTotal();
     const cartItems = cart.getItems();
-    
+     
     const order = {
       ...buyerData, // распаковываем данные покупателя
       total: cartTotal,
@@ -298,7 +267,7 @@ async function handleContactsSubmit(data: IFormData) {
     await communication.sendOrder(order);
 
     modalView.setContent(orderSuccessView.render({ totalPrice: cartTotal }));
-    
+     
     // Полная очистка состояния после успешного заказа
     cart.clear();
     buyer.clear();
@@ -328,15 +297,35 @@ function handleModalClose() {
 
 function handleOrderChange(key: string, value: string) {
   buyer.change(key as keyof IBuyer, value);
+  // Валидация вызывается автоматически в buyer.change()
+}
+
+function handleContactsChange(key: string, value: string) {
+  buyer.change(key as keyof IBuyer, value);
 }
 
 function handleFormValidate(errors: { payment: boolean; email: boolean; phone: boolean; address: boolean }) {
-  if (modalView.getContent()?.classList.contains('form')) {
-    const formName = modalView.getContent()?.querySelector('form')?.name;
+  const modalContent = modalView.getContent();
+  
+  // Проверяем, является ли содержимое модального окна формой
+  if (modalContent && modalContent.tagName === 'FORM') {
+    const form = modalContent as HTMLFormElement;
+    const formName = form.name;
     if (formName === 'order') {
       orderFormView.validate(errors);
     } else if (formName === 'contacts') {
       contactsFormView.validate(errors);
+    }
+  } else {
+    // Ищем форму в содержимом модального окна
+    const form = modalContent?.querySelector('form') as HTMLFormElement;
+    if (form) {
+      const formName = form.name;
+      if (formName === 'order') {
+        orderFormView.validate(errors);
+      } else if (formName === 'contacts') {
+        contactsFormView.validate(errors);
+      }
     }
   }
 }

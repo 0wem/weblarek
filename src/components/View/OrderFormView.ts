@@ -7,10 +7,11 @@ export class OrderFormView extends FormView {
 
   constructor(container: HTMLElement, eventEmitter: EventEmitter) {
     super(container, eventEmitter);
-    
+     
     // Находим элементы в конструкторе и сохраняем в полях класса
     this.paymentButtons = this.form?.querySelectorAll('.order__buttons button') as NodeListOf<HTMLButtonElement>;
     this.addressInput = this.form?.querySelector('[name="address"]') as HTMLInputElement;
+    
     
     // Устанавливаем слушатели событий один раз в конструкторе
     if (this.paymentButtons) {
@@ -22,10 +23,9 @@ export class OrderFormView extends FormView {
       });
     }
 
-    // Валидация адреса
+    // Отправка данных адреса в модель
     this.addressInput?.addEventListener('input', () => {
       this.eventEmitter.emit('order:change', { value: this.addressInput.value, key: 'address' });
-      this.validateForm();
     });
   }
 
@@ -46,8 +46,6 @@ export class OrderFormView extends FormView {
     // Добавляем активный класс к выбранной кнопке
     selectedButton.classList.remove('button_alt');
     selectedButton.classList.add('button_alt-active');
-    
-    this.validateForm();
   }
 
   validate(errors: { payment: boolean; email: boolean; phone: boolean; address: boolean }): void {
@@ -65,31 +63,7 @@ export class OrderFormView extends FormView {
     }
   }
 
-  private validateForm(): void {
-    const formData = this.getFormData();
-    const address = formData.address as string;
-    const payment = this.getSelectedPayment();
-    
-    const isValid = address && address.length > 5 && payment;
-    this.setSubmitButtonEnabled(Boolean(isValid));
-    
-    if (!isValid) {
-      if (!payment) {
-        this.showErrors(['Необходимо указать адрес']);
-      } else if (!address || address.length <= 5) {
-        this.showErrors(['Необходимо указать адрес']);
-      } else {
-        this.showErrors(['Необходимо указать адрес']);
-      }
-    } else {
-      this.clearErrors();
-    }
-  }
 
-  private getSelectedPayment(): string | null {
-    const activeButton = this.form?.querySelector('.button_alt-active') as HTMLButtonElement;
-    return activeButton?.name || null;
-  }
 
   public resetForm(): void {
     super.resetForm();

@@ -18,6 +18,7 @@ export abstract class FormView extends Component<IFormData> {
     this.submitButton = this.form?.querySelector('button[type="submit"]') as HTMLButtonElement;
     this.errorsElement = this.form?.querySelector('.form__errors') as HTMLElement;
     
+    
     // Устанавливаем слушатели событий один раз в конструкторе
     this.form?.addEventListener('submit', (e) => {
       e.preventDefault();
